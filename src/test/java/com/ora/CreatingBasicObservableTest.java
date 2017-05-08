@@ -3,6 +3,7 @@ package com.ora;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 
 import io.reactivex.functions.BiFunction;
@@ -11,6 +12,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.observers.TestObserver;
 
+import io.reactivex.schedulers.Schedulers;
 import org.junit.Test;
 
 import java.util.concurrent.Future;
@@ -143,7 +145,14 @@ public class CreatingBasicObservableTest {
     @Test
     public void testReduce() throws InterruptedException {
         Maybe<Integer> result = Observable.range(1, 10)
-                                          .doOnNext(System.out::println)
+                                          .doOnNext(x -> {System.out.println(x);
+                                              System.out.println(Thread.currentThread().getName());
+                                          })
+                                          .observeOn(Schedulers.computation())
+                                          .doOnNext(x -> {
+                                                          System.out.println(x);
+                                                          System.out.println(Thread.currentThread().getName());
+                                           })
                                           .reduce(
                 new BiFunction<Integer, Integer, Integer>() {
                     @Override
@@ -153,11 +162,13 @@ public class CreatingBasicObservableTest {
                     }
                 });
 
+        result.subscribe(System.out::println,
+                Throwable::printStackTrace,
+                () -> System.out.println("On Completed"));
         TestObserver test = result.test();
-
-        result.subscribe(test);
+        Thread.sleep(1000);
         test.assertValues(3628800);
-        Thread.sleep(4000);
+        Thread.sleep(10000);
     }
 
 }
