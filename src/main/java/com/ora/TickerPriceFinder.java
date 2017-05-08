@@ -10,7 +10,7 @@ public class TickerPriceFinder {
     private final ExecutorService executorService;
     private final Random random;
 
-    public TickerPriceFinder(Random random,
+    private TickerPriceFinder(Random random,
                              ExecutorService executorService) {
         this.random = random;
         this.executorService = executorService;
@@ -19,12 +19,14 @@ public class TickerPriceFinder {
     public Future<Double> getPrice(String name) {
 
         return executorService.submit(
-                () -> random.nextDouble() * 200.0);
+                () ->
+                        random.nextDouble() * 200.0);
     }
 
     public static TickerPriceFinder create() {
         Random random = new Random();
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(3);
         return new TickerPriceFinder(random, executorService);
     }
 }
